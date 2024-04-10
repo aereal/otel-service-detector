@@ -1,0 +1,62 @@
+name: CI
+on:
+  pull_request:
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: lint
+        uses: reviewdog/action-golangci-lint@v2
+  test:
+    env:
+      TEST_TARGET: ./ ./awsecs/
+    permissions:
+      actions: read
+      pull-requests: write
+      contents: read
+    strategy:
+      matrix:
+        go_version:
+          - '1.21.x'
+          - '1.22.x'
+        os:
+          - ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go_version }}
+          cache: true
+          cache-dependency-path: |
+            ./go.sum
+            ./awsecs/go.sum
+      - run: |
+          go work init $TEST_TARGET
+          go work sync
+      - name: test
+        run: go test -v -race -coverprofile=cover.out $TEST_TARGET
+      - uses: actions/upload-artifact@v4
+        if: ${{ matrix.go_version == '1.22.x' }}
+        with:
+          name: coverage
+          path: ./cover.out
+          if-no-files-found: error
+  report-coverage:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+    needs:
+      - test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: coverage
+      - uses: k1LoW/octocov-action@v1
