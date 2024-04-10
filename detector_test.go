@@ -99,7 +99,7 @@ func TestDetector_Detect(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			d := otelservicedetector.New(tc.opts...)
-			res, err := d.Detect(ctx)
+			res, err := resource.New(ctx, resource.WithDetectors(d))
 			if !res.Equal(tc.want) {
 				t.Errorf("resource: want=%v got=%v", tc.want, res)
 			}
