@@ -10,7 +10,7 @@ jobs:
         uses: reviewdog/action-golangci-lint@v2
   test:
     env:
-      TEST_TARGET: ./... ./awsecs/...
+      TEST_TARGET: ./ ./awsecs/
     strategy:
       matrix:
         go_version:
