@@ -92,21 +92,20 @@ func (d *Detector) Detect(ctx context.Context) (*resource.Resource, error) {
 	if _, tag, found := strings.Cut(metadata.Image, ":"); found {
 		attrs = append(attrs, semconv.ServiceVersion(tag))
 	}
-	_ = d.add(&attrs, metadata.Labels, d.labelServiceName, semconv.ServiceNameKey)
-	_ = d.add(&attrs, metadata.Labels, d.labelDeploymentEnv, semconv.DeploymentEnvironmentKey)
+	d.add(&attrs, metadata.Labels, d.labelServiceName, semconv.ServiceNameKey)
+	d.add(&attrs, metadata.Labels, d.labelDeploymentEnv, semconv.DeploymentEnvironmentKey)
 	return resource.NewWithAttributes(semconv.SchemaURL, attrs...), nil
 }
 
-func (d *Detector) add(attrs *[]attribute.KeyValue, labels Labels, labelNames []string, key attribute.Key) (found bool) {
+func (d *Detector) add(attrs *[]attribute.KeyValue, labels Labels, labelNames []string, key attribute.Key) {
 	for _, labelName := range labelNames {
 		v := labels.Get(labelName)
 		if v == "" {
 			continue
 		}
 		*attrs = append(*attrs, key.String(v))
-		return true
+		return
 	}
-	return false
 }
 
 type ProvideContainerMetadataError struct {
