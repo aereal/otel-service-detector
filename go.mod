@@ -1,6 +1,6 @@
 module github.com/aereal/otel-service-detector
 
-go 1.22.2
+go 1.22
 
 require (
 	go.opentelemetry.io/otel v1.25.0
